@@ -83,7 +83,13 @@ public class Main {
 
 
                 case 5:
-                    menuReportes(scanner, productoRepo, categoriaRepo);
+                    menuReportes(
+                            scanner,
+                            productoRepo,
+                            categoriaRepo,
+                            usuarioRepo,
+                            pedidoRepo
+                    );
                     break;
 
                 case 0:
@@ -1387,8 +1393,252 @@ public class Main {
     private static void menuReportes(
             Scanner scanner,
             ProductoRepository productoRepo,
-            CategoriaRepository categoriaRepo) {
+            CategoriaRepository categoriaRepo,
+            UsuarioRepository usuarioRepo,
+            PedidoRepository pedidoRepo) {
 
+        boolean volver = false;
+
+        while (!volver) {
+
+            System.out.println("\n===== REPORTES =====");
+            System.out.println("1. Productos por categoría");
+            System.out.println("2. Pedidos por usuario");
+            System.out.println("3. Pedidos por estado");
+            System.out.println("4. Total facturado");
+            System.out.println("0. Volver");
+
+            System.out.print("Seleccione una opción: ");
+
+            int opcion = scanner.nextInt();
+
+            switch (opcion) {
+
+                case 1: {
+
+                    // Listar categorías activas
+                    List<Categoria> categorias = categoriaRepo.listarActivos();
+
+                    if (categorias.isEmpty()) {
+
+                        System.out.println("No existen categorías activas.");
+                        break;
+
+                    }
+
+                    System.out.println("\n******** CATEGORÍAS ********");
+
+                    categorias.forEach(categoria ->
+
+                            System.out.printf("%-5d %-25s%n",
+                                    categoria.getId(),
+                                    categoria.getNombre())
+
+                    );
+
+                    // Solicitar la categoría
+                    System.out.print("\nIngrese el ID de la categoría: ");
+                    Long idCategoria = scanner.nextLong();
+
+                    // Buscar productos
+                    List<Producto> productos =
+                            productoRepo.buscarPorCategoria(idCategoria);
+
+                    if (productos.isEmpty()) {
+
+                        System.out.println("No existen productos activos para esa categoría.");
+                        break;
+
+                    }
+
+                    // Mostrar resultados
+                    System.out.println("\n******** PRODUCTOS ********");
+
+                    System.out.printf("%-5s %-25s %-12s %-10s%n",
+                            "ID",
+                            "NOMBRE",
+                            "PRECIO",
+                            "STOCK");
+
+                    System.out.println("-----------------------------------------------------------");
+
+                    productos.forEach(producto ->
+
+                            System.out.printf("%-5d %-25s $%-10.2f %-10d%n",
+                                    producto.getId(),
+                                    producto.getNombre(),
+                                    producto.getPrecio(),
+                                    producto.getStock())
+
+                    );
+
+                    break;
+                }
+
+                case 2: {
+
+                    // Listar usuarios activos
+                    List<Usuario> usuarios = usuarioRepo.listarActivos();
+
+                    if (usuarios.isEmpty()) {
+
+                        System.out.println("No existen usuarios activos.");
+                        break;
+
+                    }
+
+                    System.out.println("\n******** USUARIOS ********");
+
+                    usuarios.forEach(usuario ->
+
+                            System.out.printf("%-5d %-30s%n",
+                                    usuario.getId(),
+                                    usuario.getNombre() + " " + usuario.getApellido())
+
+                    );
+
+                    // Solicitar usuario
+                    System.out.print("\nIngrese el ID del usuario: ");
+                    Long idUsuario = scanner.nextLong();
+
+                    // Buscar pedidos del usuario
+                    List<Pedido> pedidos = pedidoRepo.buscarPorUsuario(idUsuario);
+
+                    if (pedidos.isEmpty()) {
+
+                        System.out.println("El usuario no posee pedidos.");
+                        break;
+
+                    }
+
+                    // Mostrar resultados
+                    System.out.println("\n******** PEDIDOS DEL USUARIO ********");
+
+                    System.out.printf("%-5s %-12s %-15s %-18s %-10s%n",
+                            "ID",
+                            "FECHA",
+                            "ESTADO",
+                            "FORMA PAGO",
+                            "TOTAL");
+
+                    System.out.println("--------------------------------------------------------------------------");
+
+                    pedidos.forEach(pedido ->
+
+                            System.out.printf("%-5d %-12s %-15s %-18s $%-10.2f%n",
+                                    pedido.getId(),
+                                    pedido.getFecha(),
+                                    pedido.getEstado(),
+                                    pedido.getFormapago(),
+                                    pedido.getTotal())
+
+                    );
+
+                    break;
+                }
+
+                case 3: {
+
+                    // Mostrar los estados disponibles
+                    System.out.println("\nSeleccione un estado:");
+                    System.out.println("1. PENDIENTE");
+                    System.out.println("2. CONFIRMADO");
+                    System.out.println("3. TERMINADO");
+                    System.out.println("4. CANCELADO");
+
+                    int opcionEstado = scanner.nextInt();
+
+                    Estado estadoSeleccionado = Estado.PENDIENTE;
+
+                    switch (opcionEstado) {
+
+                        case 1:
+                            estadoSeleccionado = Estado.PENDIENTE;
+                            break;
+
+                        case 2:
+                            estadoSeleccionado = Estado.CONFIRMADO;
+                            break;
+
+                        case 3:
+                            estadoSeleccionado = Estado.TERMINADO;
+                            break;
+
+                        case 4:
+                            estadoSeleccionado = Estado.CANCELADO;
+                            break;
+
+                        default:
+                            System.out.println("Estado inválido.");
+                            break;
+
+                    }
+
+                    // Buscar pedidos por estado
+                    List<Pedido> pedidos = pedidoRepo.buscarPorEstado(estadoSeleccionado);
+
+                    if (pedidos.isEmpty()) {
+
+                        System.out.println("No existen pedidos con ese estado.");
+                        break;
+
+                    }
+
+                    // Mostrar resultados
+                    System.out.println("\n******** PEDIDOS ********");
+
+                    System.out.printf("%-5s %-12s %-30s %-10s%n",
+                            "ID",
+                            "FECHA",
+                            "USUARIO",
+                            "TOTAL");
+
+                    System.out.println("---------------------------------------------------------------------");
+
+                    pedidos.forEach(pedido ->
+
+                            System.out.printf("%-5d %-12s %-30s $%-10.2f%n",
+                                    pedido.getId(),
+                                    pedido.getFecha(),
+                                    pedido.getUsuario().getNombre() + " " + pedido.getUsuario().getApellido(),
+                                    pedido.getTotal())
+
+                    );
+
+                    break;
+                }
+
+                case 4: {
+
+                    // Buscar todos los pedidos terminados
+                    List<Pedido> pedidosTerminados =
+                            pedidoRepo.buscarPorEstado(Estado.TERMINADO);
+
+                    // Calcular el total facturado
+                    double totalFacturado = pedidosTerminados.stream()
+
+                            .map(Pedido::getTotal)
+                            .filter(total -> total != null)
+                            .mapToDouble(Double::doubleValue)
+                            .sum();
+
+                    // Mostrar resultado
+                    System.out.println("\n******** TOTAL FACTURADO ********");
+
+                    System.out.println("Total facturado: $" +
+                            String.format(java.util.Locale.US, "%.2f", totalFacturado));
+
+                    break;
+                }
+
+                case 0:
+                    volver = true;
+                    break;
+
+                default:
+                    System.out.println("Opción inválida.");
+            }
+        }
     }
 
 }
