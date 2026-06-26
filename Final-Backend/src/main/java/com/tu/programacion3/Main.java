@@ -3,6 +3,8 @@ package com.tu.programacion3;
 import com.tu.programacion3.datos.DatosPruebas;
 import com.tu.programacion3.entities.Categoria;
 import com.tu.programacion3.entities.Producto;
+import com.tu.programacion3.entities.Usuario;
+import com.tu.programacion3.enums.Rol;
 import com.tu.programacion3.repository.CategoriaRepository;
 import com.tu.programacion3.repository.ProductoRepository;
 import com.tu.programacion3.repository.UsuarioRepository;
@@ -597,6 +599,286 @@ public class Main {
             Scanner scanner,
             UsuarioRepository usuarioRepo) {
 
+        boolean volver = false;
+
+        while (!volver) {
+
+            System.out.println("\n===== GESTIÓN DE USUARIOS =====");
+            System.out.println("1. Alta");
+            System.out.println("2. Modificar");
+            System.out.println("3. Baja lógica");
+            System.out.println("4. Listar");
+            System.out.println("5. Buscar por Email");
+            System.out.println("0. Volver");
+            System.out.print("Seleccione una opción: ");
+
+            int opcion = scanner.nextInt();
+
+            switch (opcion) {
+
+                case 1: {
+
+                    // Limpiar el buffer
+                    scanner.nextLine();
+
+                    // Solicitar los datos del usuario
+                    System.out.print("Nombre: ");
+                    String nombre = scanner.nextLine();
+
+                    System.out.print("Apellido: ");
+                    String apellido = scanner.nextLine();
+
+                    System.out.print("Mail: ");
+                    String mail = scanner.nextLine();
+
+                    // Verificar que el mail no exista
+                    Usuario existente = usuarioRepo.buscarPorMail(mail);
+
+                    if (existente != null) {
+
+                        System.out.println("Ya existe un usuario con ese mail.");
+                        break;
+
+                    }
+
+                    System.out.print("Celular: ");
+                    String celular = scanner.nextLine();
+
+                    System.out.print("Password: ");
+                    String password = scanner.nextLine();
+
+                    // Seleccionar el rol
+                    System.out.println("\nSeleccione el rol:");
+                    System.out.println("1. ADMIN");
+                    System.out.println("2. USUARIO");
+                    System.out.print("Opción: ");
+
+                    int opcionRol = scanner.nextInt();
+
+                    Rol rol = Rol.USUARIO;
+
+                    switch (opcionRol) {
+
+                        case 1:
+                            rol = Rol.ADMIN;
+                            break;
+
+                        case 2:
+                            rol = Rol.USUARIO;
+                            break;
+
+                        default:
+                            System.out.println("Rol inválido. Se asignará USUARIO por defecto.");
+                    }
+
+                    // Crear el usuario
+                    Usuario usuario = Usuario.builder()
+                            .nombre(nombre)
+                            .apellido(apellido)
+                            .mail(mail)
+                            .celular(celular)
+                            .password(password)
+                            .rol(rol)
+                            .build();
+
+                    // Guardar en la base de datos
+                    usuarioRepo.guardar(usuario);
+
+                    System.out.println("Usuario guardado correctamente.");
+                    System.out.println("ID generado: " + usuario.getId());
+
+                    break;
+                }
+
+                case 2: {
+
+                    // Mostrar los usuarios activos
+                    System.out.println("\n******** USUARIOS ACTIVOS ********");
+
+                    usuarioRepo.listarActivos().forEach(usuario ->
+
+                            System.out.printf("%-5d %-30s %-30s%n",
+                                    usuario.getId(),
+                                    usuario.getNombre() + " " + usuario.getApellido(),
+                                    usuario.getMail())
+
+                    );
+
+                    // Solicitar el ID
+                    System.out.print("\nIngrese el ID del usuario a modificar: ");
+                    Long idModificar = scanner.nextLong();
+
+                    Optional<Usuario> usuarioOptional = usuarioRepo.buscarPorId(idModificar);
+
+                    if (usuarioOptional.isEmpty()) {
+
+                        System.out.println("No existe un usuario con ese ID.");
+                        break;
+
+                    }
+
+                    Usuario usuarioModificar = usuarioOptional.get();
+
+                    scanner.nextLine();
+
+                    // Mostrar los datos actuales
+                    System.out.println("\n===== DATOS ACTUALES =====");
+                    System.out.println("Nombre: " + usuarioModificar.getNombre());
+                    System.out.println("Apellido: " + usuarioModificar.getApellido());
+                    System.out.println("Mail: " + usuarioModificar.getMail());
+                    System.out.println("Celular: " + usuarioModificar.getCelular());
+                    System.out.println("Rol: " + usuarioModificar.getRol());
+
+                    // Solicitar los nuevos datos
+                    System.out.print("\nNuevo nombre: ");
+                    String nuevoNombre = scanner.nextLine();
+
+                    System.out.print("Nuevo apellido: ");
+                    String nuevoApellido = scanner.nextLine();
+
+                    System.out.print("Nuevo mail: ");
+                    String nuevoMail = scanner.nextLine();
+
+                    // Validar que el mail no pertenezca a otro usuario
+                    Usuario existente = usuarioRepo.buscarPorMail(nuevoMail);
+
+                    if (existente != null &&
+                            !existente.getId().equals(usuarioModificar.getId())) {
+
+                        System.out.println("Ya existe otro usuario con ese mail.");
+                        break;
+
+                    }
+
+                    System.out.print("Nuevo celular: ");
+                    String nuevoCelular = scanner.nextLine();
+
+                    System.out.print("Nueva contraseña: ");
+                    String nuevaPassword = scanner.nextLine();
+
+                    // Actualizar los datos
+                    usuarioModificar.setNombre(nuevoNombre);
+                    usuarioModificar.setApellido(nuevoApellido);
+                    usuarioModificar.setMail(nuevoMail);
+                    usuarioModificar.setCelular(nuevoCelular);
+                    usuarioModificar.setPassword(nuevaPassword);
+
+                    // Guardar los cambios
+                    usuarioRepo.actualizar(usuarioModificar);
+
+                    System.out.println("Usuario actualizado correctamente.");
+
+                    break;
+                }
+
+                case 3: {
+
+                    // Solicitar el ID del usuario
+                    System.out.print("Ingrese el ID del usuario a eliminar: ");
+                    Long idEliminar = scanner.nextLong();
+
+                    // Buscar el usuario antes de eliminarlo
+                    Optional<Usuario> usuarioOptional = usuarioRepo.buscarPorId(idEliminar);
+
+                    // Verificar que exista
+                    if (usuarioOptional.isEmpty()) {
+
+                        System.out.println("No existe un usuario con ese ID.");
+                        break;
+
+                    }
+
+                    // Guardar nombre y apellido para mostrarlos luego
+                    Usuario usuarioEliminar = usuarioOptional.get();
+
+                    // Ejecutar la baja lógica
+                    boolean eliminado = usuarioRepo.eliminarLogico(idEliminar);
+
+                    if (eliminado) {
+
+                        System.out.println("Usuario eliminado correctamente.");
+                        System.out.println("Usuario afectado: "
+                                + usuarioEliminar.getNombre() + " "
+                                + usuarioEliminar.getApellido());
+
+                        System.out.println("Sus pedidos permanecen en el sistema.");
+
+                    } else {
+
+                        System.out.println("No fue posible eliminar el usuario.");
+
+                    }
+
+                    break;
+                }
+
+                case 4: {
+
+                    // Mostrar encabezado
+                    System.out.println("\n******** USUARIOS ACTIVOS ********");
+
+                    System.out.printf("%-5s %-30s %-30s %-15s%n",
+                            "ID",
+                            "NOMBRE",
+                            "MAIL",
+                            "ROL");
+
+                    System.out.println("--------------------------------------------------------------------------------");
+
+                    // Listar todos los usuarios activos
+                    usuarioRepo.listarActivos().forEach(usuario -> {
+
+                        System.out.printf("%-5d %-30s %-30s %-15s%n",
+                                usuario.getId(),
+                                usuario.getNombre() + " " + usuario.getApellido(),
+                                usuario.getMail(),
+                                usuario.getRol());
+
+                    });
+
+                    break;
+                }
+
+                case 5: {
+
+                    // Limpiar el buffer
+                    scanner.nextLine();
+
+                    // Solicitar el mail
+                    System.out.print("Ingrese el mail del usuario: ");
+                    String mail = scanner.nextLine();
+
+                    // Buscar el usuario
+                    Usuario usuario = usuarioRepo.buscarPorMail(mail);
+
+                    if (usuario == null || usuario.isEliminado()) {
+
+                        System.out.println("No existe un usuario activo con ese mail.");
+                        break;
+
+                    }
+
+                    // Mostrar los datos (sin la contraseña)
+                    System.out.println("\n===== DATOS DEL USUARIO =====");
+
+                    System.out.println("ID: " + usuario.getId());
+                    System.out.println("Nombre: " + usuario.getNombre());
+                    System.out.println("Apellido: " + usuario.getApellido());
+                    System.out.println("Mail: " + usuario.getMail());
+                    System.out.println("Celular: " + usuario.getCelular());
+                    System.out.println("Rol: " + usuario.getRol());
+
+                    break;
+                }
+
+                case 0:
+                    volver = true;
+                    break;
+
+                default:
+                    System.out.println("Opción inválida.");
+            }
+        }
     }
 
     // MENU REPORTES
