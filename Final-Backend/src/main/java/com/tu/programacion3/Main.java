@@ -1,5 +1,6 @@
 package com.tu.programacion3;
 
+import com.tu.programacion3.datos.DatosPruebas;
 import com.tu.programacion3.entities.Categoria;
 import com.tu.programacion3.entities.Pedido;
 import com.tu.programacion3.entities.Producto;
@@ -39,9 +40,9 @@ public class Main {
         PedidoRepository pedidoRepo = new PedidoRepository();
 
 //        DatosPruebas.cargarDatos(
-//                categoriaRepo,
-//                productoRepo
-//        );
+//               categoriaRepo,
+//               productoRepo
+//       );
 
         boolean salir = false;
 
