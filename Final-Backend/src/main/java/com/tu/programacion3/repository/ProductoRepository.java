@@ -32,4 +32,26 @@ public class ProductoRepository extends BaseRepository<Producto>{
             em.close(); // liberar el recurso
         }
     }
+
+    public Producto buscarPorNombre(String nombre) {
+
+        EntityManager em = emf.createEntityManager();
+
+        try {
+
+            String jpql = "SELECT p FROM Producto p WHERE p.nombre = :nombre AND p.eliminado = false";
+
+            TypedQuery<Producto> query = em.createQuery(jpql, Producto.class);
+
+            query.setParameter("nombre", nombre);
+
+            return query.getResultStream().findFirst().orElse(null);
+
+        } finally {
+
+            em.close();
+
+        }
+    }
 }
+
