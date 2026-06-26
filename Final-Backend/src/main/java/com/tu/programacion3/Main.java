@@ -1066,85 +1066,49 @@ public class Main {
                         agregarOtro = respuesta.equalsIgnoreCase("S");
                     }
 
-                    boolean agregarOtro1 = true;
+                    // Verificar que se haya agregado al menos un producto
+                    if (items.isEmpty()) {
 
-                    while (agregarOtro1) {
+                        System.out.println("No se agregaron productos al pedido.");
+                        break;
 
-                        // Mostrar productos activos
-                        System.out.println("\n===== PRODUCTOS DISPONIBLES =====");
-
-                        productoRepo.listarActivos().forEach(producto ->
-
-                                System.out.printf("%-5d %-25s $%-10.2f Stock: %-5d Disponible: %s%n",
-                                        producto.getId(),
-                                        producto.getNombre(),
-                                        producto.getPrecio(),
-                                        producto.getStock(),
-                                        producto.isDisponible() ? "SI" : "NO")
-
-                        );
-
-                        // Solicitar el producto
-                        System.out.print("\nIngrese el ID del producto: ");
-                        Long idProducto = scanner.nextLong();
-
-                        Optional<Producto> productoOptional =
-                                productoRepo.buscarPorId(idProducto);
-
-                        if (productoOptional.isEmpty()) {
-
-                            System.out.println("Producto inexistente.");
-                            continue;
-
-                        }
-
-                        Producto producto = productoOptional.get();
-
-                        // Verificar disponibilidad
-                        if (!producto.isDisponible()) {
-
-                            System.out.println("El producto no está disponible.");
-                            continue;
-
-                        }
-
-                        // Solicitar cantidad
-                        System.out.print("Cantidad: ");
-                        int cantidad = scanner.nextInt();
-
-                        if (cantidad <= 0) {
-
-                            System.out.println("La cantidad debe ser mayor a cero.");
-                            continue;
-
-                        }
-
-                        if (cantidad > producto.getStock()) {
-
-                            System.out.println("Stock insuficiente.");
-                            System.out.println("Stock disponible: " + producto.getStock());
-                            continue;
-
-                        }
-
-                        // Guardar en la lista temporal
-                        items.add(new ItemPedidoTemp(
-                                producto.getId(),
-                                cantidad
-                        ));
-
-                        // Preguntar si desea agregar otro producto
-                        System.out.print("\n¿Agregar otro producto? (S/N): ");
-
-                        scanner.nextLine();
-
-                        String respuesta = scanner.nextLine();
-
-                        agregarOtro1 = respuesta.equalsIgnoreCase("S");
                     }
 
-                    break;
+                    // Crear el pedido
+                    Pedido pedido = pedidoRepo.crearPedido(
+                            usuario,
+                            formaPago,
+                            items
+                    );
+
+                    // Verificar si se creó correctamente
+                    if (pedido != null) {
+
+                        System.out.println("\n===== PEDIDO CREADO =====");
+                        System.out.println("ID: " + pedido.getId());
+                        System.out.println("Fecha: " + pedido.getFecha());
+                        System.out.println("Usuario: "
+                                + pedido.getUsuario().getNombre()
+                                + " "
+                                + pedido.getUsuario().getApellido());
+                        System.out.println("Forma de pago: " + pedido.getFormapago());
+                        System.out.println("Estado: " + pedido.getEstado());
+                        System.out.println("Total: $" + pedido.getTotal());
+
+                    } else {
+
+                        System.out.println("No fue posible crear el pedido.");
+
+
+
+
+                    }
+
                 }
+
+                break;
+
+
 
                 case 2: {
 
