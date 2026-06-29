@@ -1147,9 +1147,7 @@ public class Main {
 
                     int opcionEstado = scanner.nextInt();
 
-                    Estado nuevoEstado;
-
-                    Estado nuevoEstado1 = Estado.PENDIENTE;
+                    Estado nuevoEstado = pedidoModificar.getEstado();
 
                     switch (opcionEstado) {
 
@@ -1174,7 +1172,7 @@ public class Main {
                     }
 
                     // Actualizar el estado
-                    pedidoModificar.setEstado(nuevoEstado1);
+                    pedidoModificar.setEstado(nuevoEstado);
 
                     // Guardar cambios
                     pedidoRepo.actualizar(pedidoModificar);
